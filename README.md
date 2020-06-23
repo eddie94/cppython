@@ -13,4 +13,18 @@ The datatypes are shown below
 |:---:|:---------:|:--------:|
 |int|int|cppyInt|
 
-# builtin functions
+# Builtin functions
+Builtin functions are also implemented.  
+Builtin functions are shown below.
+
+|python3.5|cppython|
+|:---:|:---:|
+|print|print|
+
+# Usage
+Unlike python, cppython needs to declare the variables like C/C++.  
+The declaration form follows C/C++.  
+But if you don't initialize the variable, it becomes a none type variable so be careful.
+
+> cppyInt a; //declare a none type variable
+> cppyInt b=1; //declare an integer with value 1
