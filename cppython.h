@@ -1,11 +1,25 @@
 #include <iostream>
+#include <stdlib.h>
 
 #define noneType -1
 #define intType 0
+#define floatType 1
 
 namespace cppython
 {
     // print function
+    void print(bool tf,char* end="\n")
+    {
+        if (tf==true)
+        {
+            std::cout<<"True"<<end;
+        }
+        else
+        {
+            std::cout<<"False"<<end;
+        }
+    }
+
     void print(int n, char* end="\n")
     {
         std::cout << n << end;
@@ -70,11 +84,63 @@ namespace cppython
         public:
             int Value;
             bool iterable = false;
-            int objtype = intType;
+            short int objtype = intType;
 
             cppyInt();
             cppyInt(int n);
             cppyInt& operator=(int n);
+
+            cppyInt& operator+=(int rhs);
+            template <class pyobj>
+            cppyInt& operator+=(pyobj &rhs);
+
+            cppyInt& operator-=(int rhs);
+            template <class pyobj>
+            cppyInt& operator-=(pyobj &rhs);
+
+            cppyInt& operator*=(int rhs);
+            template <class pyobj>
+            cppyInt& operator*=(pyobj &rhs);
+
+            cppyInt& operator/=(int rhs);
+            template <class pyobj>
+            cppyInt& operator/=(pyobj &rhs);
+
+            cppyInt& operator%=(int rhs);
+            template <class pyobj>
+            cppyInt& operator%=(pyobj &rhs);
+
+            cppyInt& operator^=(int rhs);
+            template <class pyobj>
+            cppyInt& operator^=(pyobj &rhs);
+            
+            cppyInt operator+(int rhs);
+            template <class pyobj>
+            cppyInt operator+(pyobj &rhs);
+
+            cppyInt operator-(int rhs);
+            template <class pyobj>
+            cppyInt operator-(pyobj &rhs);
+
+            cppyInt operator*(int rhs);
+            template <class pyobj>
+            cppyInt operator*(pyobj &rhs);
+
+            cppyInt operator/(int rhs);
+            template <class pyobj>
+            cppyInt operator/(pyobj &rhs);
+
+            cppyInt operator%(int rhs);
+            template <class pyobj>
+            cppyInt operator%(pyobj &rhs);
+
+            cppyInt operator^(int rhs);
+            template <class pyobj>
+            cppyInt operator^(pyobj &rhs);
+
+            bool operator==(int rhs);
+            template <class pyobj>
+            bool operator==(pyobj &rhs);
     };
 
     cppyInt::cppyInt() // default initialization set value pointer to 0
@@ -89,13 +155,295 @@ namespace cppython
         this->ValuePtr = &this->Value;
     }
 
+    // operator =
     cppyInt& cppyInt::operator=(int rhs)
     {
         this->Value = rhs;
         this->ValuePtr = &this->Value;
     }
 
+    // operator +=
+    cppyInt& cppyInt::operator+=(int rhs)
+    {
+        this->Value += rhs;
+        return *this;
+    }
+
+    template <class pyobj>
+    cppyInt& cppyInt::operator+=(pyobj &rhs)
+    {
+        if (rhs.objtype == intType)
+        {
+            this->Value+=rhs.Value;
+            return *this;
+        }
+        else
+        {
+            std::cout<<"ValueError: expected datatype int, recieved "<<rhs.objtype << std::endl;
+            exit(0);
+        }
+    }
+
+        // operator -=
+    cppyInt& cppyInt::operator-=(int rhs)
+    {
+        this->Value -= rhs;
+        return *this;
+    }
+
+    template <class pyobj>
+    cppyInt& cppyInt::operator-=(pyobj &rhs)
+    {
+        if (rhs.objtype == intType)
+        {
+            this->Value-=rhs.Value;
+            return *this;
+        }
+        else
+        {
+            std::cout<<"ValueError: expected datatype int, recieved "<<rhs.objtype << std::endl;
+            exit(0);
+        }
+    }
+
+        // operator *=
+    cppyInt& cppyInt::operator*=(int rhs)
+    {
+        this->Value *= rhs;
+        return *this;
+    }
+
+    template <class pyobj>
+    cppyInt& cppyInt::operator*=(pyobj &rhs)
+    {
+        if (rhs.objtype == intType)
+        {
+            this->Value*=rhs.Value;
+            return *this;
+        }
+        else
+        {
+            std::cout<<"ValueError: expected datatype int, recieved "<<rhs.objtype << std::endl;
+            exit(0);
+        }
+    }
+
+        // operator /=
+    cppyInt& cppyInt::operator/=(int rhs)
+    {
+        this->Value /= rhs;
+        return *this;
+    }
+
+    template <class pyobj>
+    cppyInt& cppyInt::operator/=(pyobj &rhs)
+    {
+        if (rhs.objtype == intType)
+        {
+            this->Value/=rhs.Value;
+            return *this;
+        }
+        else
+        {
+            std::cout<<"ValueError: expected datatype int, recieved "<<rhs.objtype << std::endl;
+            exit(0);
+        }
+    }
+
+    // operator %=
+    cppyInt& cppyInt::operator%=(int rhs)
+    {
+        this->Value -= (this->Value/rhs)*rhs;
+        return *this;
+    }
+
+    template <class pyobj>
+    cppyInt& cppyInt::operator%=(pyobj &rhs)
+    {
+        if (rhs.objtype == intType)
+        {
+            this->Value -= (this->Value/rhs.Value)*rhs.Value;
+            return *this;
+        }
+        else
+        {
+            std::cout << "ValueError: expected datatype int recieved " << rhs.objtype << std::endl;
+            exit(0);
+        }
+        
+    }
+
+    // operator ^=
+    cppyInt& cppyInt::operator^=(int rhs)
+    {
+        int tmp = this->Value;
+
+        for (int i=0; i<rhs; i++)
+        {
+            this->Value *= tmp;
+        }
+        
+        return *this;
+    }
+
+    template <class pyobj>
+    cppyInt& cppyInt::operator^=(pyobj &rhs)
+    {
+        short int objtype = rhs.objtype;
+        if (objtype == intType)
+        {
+            int tmp = this->Value;
+
+            for (int i=0; i<rhs.Value-1; i++)
+            {
+                this->Value *= tmp;
+            }
+        }
+        else
+        {
+            std::cout << "ValueError: expected datatype int recieved " << rhs.objtype << std::endl;
+            exit(0);
+        }
+        
+    }
+
+    //operator +
+    cppyInt cppyInt::operator+(int rhs)
+    {
+        cppyInt result = *this;
+        result+=rhs;
+        return result;
+    }
+
+    template <class pyobj>
+    cppyInt cppyInt::operator+(pyobj &rhs)
+    {
+        cppyInt result = *this;
+        result+=rhs;
+        return result;
+    }
+
+    //operator -
+    cppyInt cppyInt::operator-(int rhs)
+    {
+        cppyInt result = *this;
+        result-=rhs;
+        return result;
+    }
+
+    template <class pyobj>
+    cppyInt cppyInt::operator-(pyobj &rhs)
+    {
+        cppyInt result = *this;
+        result-=rhs;
+        return result;
+    }
+
+    //operator *
+    cppyInt cppyInt::operator*(int rhs)
+    {
+        cppyInt result = *this;
+        result*=rhs;
+        return result;
+    }
+
+    template <class pyobj>
+    cppyInt cppyInt::operator*(pyobj &rhs)
+    {
+        cppyInt result = *this;
+        result*=rhs;
+        return result;
+    }
+
+    //operator /
+    cppyInt cppyInt::operator/(int rhs)
+    {
+        cppyInt result = *this;
+        result/=rhs;
+        return result;
+    }
+
+    template <class pyobj>
+    cppyInt cppyInt::operator/(pyobj &rhs)
+    {
+        cppyInt result = *this;
+        result/=rhs;
+        return result;
+    }
+
+    //operator %
+    cppyInt cppyInt::operator%(int rhs)
+    {
+        cppyInt result = *this;
+        result%=rhs;
+        return result;
+    }
+
+    template <class pyobj>
+    cppyInt cppyInt::operator%(pyobj &rhs)
+    {
+        cppyInt result = *this;
+        result%=rhs;
+        return result;
+    }
+
+    //operator ^
+    cppyInt cppyInt::operator^(int rhs)
+    {
+        cppyInt result = *this;
+        result^=rhs;
+        return result;
+    }
+
+    template <class pyobj>
+    cppyInt cppyInt::operator^(pyobj &rhs)
+    {
+        cppyInt result = *this;
+        result^=rhs;
+        return result;
+    }
+
+    //operator ==
+    bool cppyInt::operator==(int rhs)
+    {
+        if (this->Value == rhs)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    template <class pyobj>
+    bool cppyInt::operator==(pyobj &rhs)
+    {
+        if (rhs.objtype != intType)
+        {
+            return false;
+        }
+        else if (this->Value == rhs.Value)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     //end of cppyInt
+
+    //cppyFloat
+
+    class cppyFloat : public cppyObject
+    {
+        public:
+            float Value;
+            bool iterable = false;
+            short int objtype = floatType;
+    };
 
     template <class T>
     class list

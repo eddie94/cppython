@@ -28,3 +28,27 @@ But if you don't initialize the variable, it becomes a none type variable so be 
 
 > cppyInt a; //declare a none type variable
 > cppyInt b=1; //declare an integer with value 1
+
+Also unlike python, number type variables don't change during operations. It follows C/C++ grammar.
+
+> cppyInt a = 5;
+> cppyInt b = 2;
+> print(a/b); //prints out 2 not 2.5
+
+Operator // doesn't exist and ** is changed to ^.
+
+> cppyInt a = 2;
+> cpptInt b = 5;
+> cppyInt c=a^b;
+> 
+> print(a^b) // prints 32
+> print(c) // prints 32
+
+### WARNING!
+Make sure to use brackets to define the computation order.  
+The computation always start from the right side.
+
+> cppyInt a = 2;
+> cppyInt b = 5;
+> print(a^b==32) // compile error! equivalent to a^(b==32)
+> print((a^b)==32) // prints true
