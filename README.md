@@ -12,9 +12,9 @@ The datatypes are shown below
 |c++|python3.5|cppython|
 |:---:|:---------:|:--------:|
 |int|int|cppyInt|
+|float|float|cppyFloat|
 
 # Builtin functions
-Builtin functions are also implemented.  
 Builtin functions are shown below.
 
 |python3.5|cppython|

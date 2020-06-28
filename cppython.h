@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <math.h>
 
 #define noneType -1
 #define intType 0
@@ -25,6 +26,11 @@ namespace cppython
         std::cout << n << end;
     }
 
+    void print(float n, char* end="\n")
+    {
+        std::cout << n << end;
+    }
+
     template <class VAR>
     void print(VAR pyobj, char* end="\n")
     {
@@ -36,6 +42,11 @@ namespace cppython
             std::cout << pyobj.Value << end;
             break;}
         
+        case floatType:{
+            std::cout << pyobj.Value << end;
+            break;
+        }
+        
         default:
             break;
         }
@@ -43,6 +54,13 @@ namespace cppython
 
     template <class ... REST>
     void print(int n, REST ... ARGS)
+    {
+        std::cout << n << " ";
+        print(ARGS...);
+    }
+
+    template <class ...REST>
+    void print(float n, REST ... ARGS)
     {
         std::cout << n << " ";
         print(ARGS...);
@@ -60,6 +78,13 @@ namespace cppython
                 std::cout << pyobj.Value << " ";
                 print(ARGS...);
             }
+            break;
+
+        case floatType:
+        {
+            std::cout << pyobj.Value << " ";
+            print(ARGS...);
+        }
             break;
         
         default:
@@ -88,7 +113,7 @@ namespace cppython
 
             cppyInt();
             cppyInt(int n);
-            cppyInt& operator=(int n);
+            void operator=(int n);
 
             cppyInt& operator+=(int rhs);
             template <class pyobj>
@@ -156,7 +181,7 @@ namespace cppython
     }
 
     // operator =
-    cppyInt& cppyInt::operator=(int rhs)
+    void cppyInt::operator=(int rhs)
     {
         this->Value = rhs;
         this->ValuePtr = &this->Value;
@@ -228,7 +253,7 @@ namespace cppython
         }
     }
 
-        // operator /=
+    // operator /=
     cppyInt& cppyInt::operator/=(int rhs)
     {
         this->Value /= rhs;
@@ -433,124 +458,388 @@ namespace cppython
         }
     }
 
-    //end of cppyInt
-
     //cppyFloat
-
     class cppyFloat : public cppyObject
     {
         public:
             float Value;
             bool iterable = false;
             short int objtype = floatType;
-    };
 
-    template <class T>
-    class list
-    {
-        private:
-            int __len__; // length of list
-            T *v; // pointer for value in list
-
-        public:
-            list();
-            explicit list(int n); // explicit definition. initialize with 0 length list
-            list(const T &a, int n); // initialize list with n type a's
-            list(const T *a, int n); // initialize list with pointers
-            list(const list &rhs); // initialize list with a list
-            list & operator=(const list &rhs); // assign a list on right hand side
-            list & operator=(const T &a); // assign a datatype on right hand side
-            inline T & operator[](const int i);
-            inline const T & operator[](const int i) const;
-            inline int len() const;
-            ~list();
-    };
-
-    template <class T>
-    list<T>::list() : __len__(0), v(0) {}
-
-    template <class T>
-    list<T>::list(int n) : __len__(n), v(new T[n]) {}
-
-    template <class T>
-    list<T>::list(const T &a, int n) : __len__(n), v(new T[n])
-    {
-        for (int i=0; i<n; i++)
-        {
-            v[i] = a;
-        }
-    }
-
-    template <class T>
-    list<T>::list(const T *a, int n) : __len__(n), v(new T[n])
-    {
-        for(int i=0; i<n; i++)
-        {
-            v[i] = *a++;
-        }
-    }
-
-    template <class T>
-    list<T>::list(const list<T> &rhs) : __len__(rhs.__len__), v(new T[__len__])
-    {
-        for (int i=0; i<__len__; i++)
-        {
-            v[i] = rhs[i];
-        }
-    }
-
-    template <class T>
-    list<T> & list<T>::operator=(const list<T> &rhs)
-    {
-        if (this != &rhs) // if 2 objects are different
-        {
-            if (__len__ != rhs.__len__) // if the length between 2 objects are different
+            cppyFloat() // initialize with nonetype
             {
-                if (v != 0) // allocate memory as the same size as rhs
-                    delete [] (v);
-                __len__ = rhs.__len__;
-                v = new T[__len__];
+                this->ValuePtr = 0;
+                this->Value=0;
+                this->objtype = noneType;
             }
 
-            for(int i=0; i<__len__; i++)
+            cppyFloat(float n) // initialize with float
             {
-                v[i]=rhs[i];
+                this->Value = n;
             }
-        }
-        return *this;
-    }
 
-    template <class T>
-    list<T> & list<T>::operator=(const T &a)
-    {
-        for(int i=0; i<__len__; i++)
-            v[i] = a;
-        return *this;
-    }
+            cppyFloat(int n) //initialize with int
+            {
+                this->Value = n;
+            }
 
-    template <class T>
-    inline T & list<T>::operator[](const int i)
-    {
-        return v[i];
-    }
+            // operator =
+            void operator=(float n)
+            {
+                this->Value = n;
+            }
+            void operator=(int n)
+            {
+                this->Value = n;
+            }
 
-    template <class T>
-    inline const T & list<T>::operator[](const int i) const
-    {
-        return v[i];
-    }
+            //operator+=
+            cppyFloat& operator+=(float rhs)
+            {
+                this->Value += rhs;
+                return *this;
+            }
+            cppyFloat&operator+=(int rhs)
+            {
+                this->Value += rhs;
+                return *this;
+            }
+            template <class pyobj>
+            cppyFloat& operator+=(pyobj &rhs)
+            {
+                if (rhs.objtype == intType || rhs.objtype==floatType)
+                {
+                    this->Value += rhs.Value;
+                    return *this;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
 
-    template <class T>
-    inline int list<T>::len() const
-    {
-        return __len__;
-    }
+            // operator -=
+            cppyFloat& operator-=(float rhs)
+            {
+                this->Value -= rhs;
+            }
+            cppyFloat& operator-=(int rhs)
+            {
+                this->Value -= rhs;
+            }
+            template <class pyobj>
+            cppyFloat& operator-=(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    this->Value -= rhs.Value;
+                    return *this;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+            
+            // operatot *=
+            cppyFloat& operator*=(float rhs)
+            {
+                this->Value *= rhs;
+            }
+            cppyFloat& operator*=(int rhs)
+            {
+                this->Value *= rhs;
+            }
+            template <class pyobj>
+            cppyFloat& operator*=(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    this->Value *= rhs.Value;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
 
-    template <class T>
-    list<T>::~list()
-    {
-        if(v!=0)
-            delete[] (v);
-    }
+            // operator /=
+            cppyFloat& operator/=(float rhs)
+            {
+                this->Value /= rhs;
+            }
+            cppyFloat& operator/=(int rhs)
+            {
+                this->Value /= rhs;
+            }
+            template <class pyobj>
+            cppyFloat& operator/=(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    this->Value /= rhs.Value;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
 
+            cppyFloat& operator%=(float rhs)
+            {
+                this->Value = this->Value - (this->Value/rhs)*rhs;
+            }
+            cppyFloat& operator%=(int rhs)
+            {
+                this->Value = this->Value - (this->Value/rhs)*rhs;
+            }
+            template <class pyobj>
+            cppyFloat& operator%=(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    this->Value = this->Value - (this->Value/rhs)*rhs;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            cppyFloat& operator^=(float rhs)
+            {
+                this->Value = pow(this->Value, rhs);
+            }
+            cppyFloat& operator^=(int rhs)
+            {
+                this->Value = pow(this->Value, rhs);
+            }
+            template <class pyobj>
+            cppyFloat& operator^=(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    this->Value = pow(this->Value, rhs);
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+            
+            //operator +
+            cppyFloat operator+(float rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp += rhs;
+                return tmp;
+            }
+            cppyFloat operator+(int rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp += rhs;
+                return tmp;
+            }
+            template <class pyobj>
+            cppyFloat operator+(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    cppyFloat tmp = *this;
+                    tmp += rhs;
+                    return tmp;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            //operator -
+            cppyFloat operator-(float rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp -= rhs;
+                return tmp;
+            }
+            cppyFloat operator-(int rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp += rhs;
+                return tmp;
+            }
+            template <class pyobj>
+            cppyFloat operator-(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    cppyFloat tmp = *this;
+                    tmp -= rhs;
+                    return tmp;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            // operator *
+            cppyFloat operator*(float rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp *= rhs;
+                return tmp;
+            }
+            cppyFloat operator*(int rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp *= rhs;
+                return tmp;
+            }
+            template <class pyobj>
+            cppyFloat operator*(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    cppyFloat tmp = *this;
+                    tmp *= rhs;
+                    return tmp;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            // operator /
+            cppyFloat operator/(float rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp /= rhs;
+                return tmp;
+            }
+            cppyFloat operator/(int rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp /= rhs;
+                return tmp;
+            }
+            template <class pyobj>
+            cppyFloat operator/(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    cppyFloat tmp = *this;
+                    tmp /= rhs;
+                    return tmp;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            //operator %
+            cppyFloat operator%(float rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp %= rhs;
+                return tmp;
+            }
+            cppyFloat operator%(int rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp %= rhs;
+                return tmp;
+            }
+            template <class pyobj>
+            cppyFloat operator%(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    cppyFloat tmp = *this;
+                    tmp %= rhs;
+                    return tmp;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            //operator ^
+            cppyFloat operator^(float rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp ^= rhs;
+                return tmp;
+            }
+            cppyFloat operator^(int rhs)
+            {
+                cppyFloat tmp = *this;
+                tmp ^= rhs;
+                return tmp;
+            }
+            template <class pyobj>
+            cppyFloat operator^(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    cppyFloat tmp = *this;
+                    tmp ^= rhs;
+                    return tmp;
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+            }
+
+            //operator ==
+            bool operator==(float rhs)
+            {
+                if(this->Value == rhs)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }
+            bool operator==(int rhs)
+            {
+                if(this->Value == rhs)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }
+            template <class pyobj>
+            bool operator==(pyobj &rhs)
+            {
+                if(rhs.objtype == intType || rhs.objtype == floatType)
+                {
+                    if(this->Value == rhs.Value)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    
+                }
+                else
+                {
+                    std::cout << "TypeError: expected float(or int) type. recieved " << rhs.objtype << std::endl;
+                }
+                
+            }
+    };
 };
